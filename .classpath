@@ -87,5 +87,6 @@
 	<classpathentry kind="lib" path="lib/neo4j/scala-library-2.11.8.jar"/>
 	<classpathentry kind="lib" path="lib/neo4j/scala-reflect-2.11.8.jar"/>
 	<classpathentry kind="lib" path="lib/neo4j/server-api-3.0.1.jar"/>
+	<classpathentry kind="lib" path="lib/weka.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

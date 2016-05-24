@@ -1,0 +1,70 @@
+@relation 'labor-neg-data-weka.filters.unsupervised.attribute.Remove-R1-4,6,8-9,11'
+
+@attribute cost-of-living-adjustment {none,tcf,tc}
+@attribute pension {none,ret_allw,empl_contr}
+@attribute education-allowance {yes,no}
+@attribute vacation {below_average,average,generous}
+@attribute longterm-disability-assistance {yes,no}
+@attribute contribution-to-dental-plan {none,half,full}
+@attribute bereavement-assistance {yes,no}
+@attribute contribution-to-health-plan {none,half,full}
+@attribute class {bad,good}
+
+@data
+?,?,?,average,?,?,yes,?,good
+?,ret_allw,yes,below_average,?,full,?,full,good
+?,empl_contr,?,generous,yes,half,yes,half,good
+tc,?,yes,?,?,?,yes,?,good
+?,?,?,average,?,half,yes,half,good
+?,?,yes,average,?,?,?,?,good
+tc,empl_contr,?,generous,yes,none,yes,half,good
+?,?,?,below_average,?,?,?,?,good
+?,?,yes,below_average,yes,half,yes,?,good
+none,empl_contr,?,generous,yes,full,?,?,good
+none,?,?,generous,?,?,yes,full,good
+?,?,?,?,?,full,?,?,good
+none,?,no,below_average,no,half,?,half,bad
+tcf,?,?,generous,?,full,yes,full,good
+none,?,no,generous,?,?,?,?,good
+none,empl_contr,?,average,?,full,yes,?,good
+?,?,?,below_average,?,?,?,?,good
+tc,ret_allw,no,below_average,yes,half,?,none,bad
+none,none,yes,average,no,none,no,none,bad
+tcf,?,?,generous,?,?,?,?,good
+?,?,?,generous,?,full,?,full,good
+?,none,?,below_average,?,?,?,?,bad
+tcf,?,?,?,?,?,?,?,good
+?,?,?,generous,?,half,?,full,good
+?,?,?,generous,?,?,?,?,good
+none,none,?,below_average,?,half,yes,full,bad
+tcf,?,yes,below_average,yes,none,?,half,good
+none,?,yes,generous,?,?,yes,full,good
+none,?,no,below_average,yes,full,yes,full,good
+?,none,?,average,?,?,yes,full,bad
+none,?,no,average,?,half,?,?,good
+tc,none,no,below_average,yes,half,yes,full,bad
+?,empl_contr,?,average,?,?,?,?,bad
+none,none,no,below_average,no,none,?,none,bad
+tc,none,no,below_average,no,half,yes,full,bad
+none,none,no,average,yes,none,yes,full,bad
+tc,ret_allw,no,generous,no,none,no,none,bad
+none,empl_contr,no,below_average,yes,half,?,none,bad
+?,empl_contr,?,average,?,?,yes,none,bad
+none,?,?,average,yes,full,yes,half,good
+none,none,yes,average,no,none,no,none,bad
+none,empl_contr,yes,generous,yes,none,yes,full,bad
+tc,empl_contr,?,average,?,?,yes,?,bad
+tcf,none,?,below_average,?,?,yes,?,bad
+none,none,?,below_average,no,none,?,none,bad
+?,?,no,below_average,no,half,?,half,bad
+none,?,?,average,?,full,yes,full,good
+tcf,?,?,?,yes,half,?,half,good
+none,?,?,below_average,yes,?,?,full,good
+none,ret_allw,?,average,yes,full,yes,full,good
+?,?,?,?,yes,full,?,?,good
+tcf,empl_contr,yes,?,yes,half,yes,?,good
+tcf,?,?,generous,?,?,yes,full,good
+none,empl_contr,?,average,yes,full,?,full,good
+none,empl_contr,?,generous,yes,?,?,full,good
+?,?,?,average,?,half,yes,half,good
+?,?,?,generous,yes,full,yes,full,good
