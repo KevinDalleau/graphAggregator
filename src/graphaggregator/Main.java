@@ -49,6 +49,8 @@ public class Main {
 		String mode = scanner.next();
 		String path = "";
 		int depth = 0;
+		boolean writeOutput = false;
+		String fileOutputPath = "";
 		List<Integer> individuals = new LinkedList<Integer>();
 		List<Integer> attributes = new LinkedList<Integer>();
 
@@ -72,6 +74,15 @@ public class Main {
 			System.out.println("Select the desired depth : ");
 			depth = Integer.parseInt(scanner.next());
 		}
+		System.out.println("Do you want to write the output in a file (y/N) ?"); 
+		if(scanner.next().equals("y")) {
+			writeOutput = true;
+		}
+		if(writeOutput) {
+			System.out.println("File name to write the output in:");
+			fileOutputPath = scanner.next();
+		}
+		
 		
 		
 		Graph g = new MultiGraph("Test");;
@@ -181,6 +192,17 @@ public class Main {
 			       	g.addNode(a.toString());
 			       	g.getNode(a.toString()).setAttribute("type", "A");;
 			       }
+			       
+			        
+					      for(int row = 0;row<dense.getRowCount();row++) {
+					   	   for(int column = 0;column<dense.getColumnCount();column++) {
+					   		   if(dense.getAsByte(row,column) == 1) {
+					   			   g.addEdge(Integer.toString(row)+"/"+Integer.toString(column), row, column);
+					   		   }
+					   	   }
+					      }
+			       
+			       
 			}
 
 		
@@ -188,7 +210,7 @@ public class Main {
 
 		
 		
-		System.out.println(dense);
+//		System.out.println(dense);
 		agg = aggregateMatrix(dense, individuals, attributes, depth);
 		System.out.println(agg);
 		g.display();
@@ -208,32 +230,24 @@ public class Main {
 		Viewer aggView = aggregated.display();
 
 		
-		//        
-		//       for(int row = 0;row<dense.getRowCount();row++) {
-		//    	   for(int column = 0;column<dense.getColumnCount();column++) {
-		//    		   if(dense.getAsByte(row,column) == 1) {
-		//    			   g.addEdge(Integer.toString(row)+"/"+Integer.toString(column), row, column);
-		//    		   }
-		//    	   }
-		//       }
-		
-		//       PrintWriter writer = new PrintWriter("file.txt", "UTF-8");
-		//       for(int i=0;i<agg.getSize(0);i++) {
-		//    	   for(int j=0; j<agg.getSize(0);j++) {
-		//    		   if(agg.getAsDouble(i,j) != 0) {
-		//    			   try {
-		//        			   aggregated.addEdge(Integer.toString(i)+"/"+Integer.toString(j), i, j);
-		//        		       writer.println(i+" "+j+" "+agg.getAsDouble(i,j));
-		//    			   }
-		//    			   catch(Exception e) {
-		//    				   
-		//    			   }
-		//    		   }
-		//    	   }
-		//       }
-		//       writer.close();
-		//       
-		//       Viewer aggView = aggregated.display();
+		if(writeOutput) {
+			PrintWriter writer = new PrintWriter(fileOutputPath, "UTF-8");
+		       for(int i=0;i<agg.getSize(0);i++) {
+		    	   for(int j=0; j<agg.getSize(0);j++) {
+		    		   if(agg.getAsDouble(i,j) != 0) {
+		    			   try {
+		        		       writer.println(i+" "+j+" "+agg.getAsDouble(i,j));
+		    			   }
+		    			   catch(Exception e) {
+		    				   
+		    			   }
+		    		   }
+		    	   }
+		       }
+		       writer.close();
+		       
+		}
+		       
 
 	}
 	public static Matrix aggregateMatrix(Matrix adj, List<Integer> individuals,List<Integer> attributes, int depth) {
@@ -244,8 +258,7 @@ public class Main {
 		for(int iter = 2; iter <= depth; iter++) {
 			oldMatrix = output;    		
 			kMult = customProduct(kMult,adj,attributes,avoidMap);
-			System.out.println("Iteration "+iter+" Map "+avoidMap.toString());
-
+//			System.out.println("Iteration "+iter+" Map "+avoidMap.toString());
 
 			for(int i = 0;i<individuals.size();i++) {
 
@@ -276,20 +289,21 @@ public class Main {
 				}
 				else {
 					avoidSet = new HashSet<String>();
-					avoidMap.put(row+"-"+col, avoidSet);
 				}
 
 				for(int k : attributeList) {
+					double localValue = A.getAsDouble(row,k-1)*B.getAsDouble(k-1,col);
 
-					if(avoidMap.get(row+"-"+(k-1))==null || !avoidMap.get(row+"-"+(k-1)).contains((k-1)+"-"+col)) {
 						if(true) {
-							double localValue = A.getAsDouble(row,k-1)*B.getAsDouble(k-1,col);
 							if(localValue >=1) {
+								if(avoidMap.get(row+"-"+(k-1))==null || !avoidMap.get(row+"-"+(k-1)).contains((k-1)+"-"+col)) {
+
 								avoidSet.add((k-1)+"-"+row);
 								avoidSet.add(col+"-"+(k-1));
 								avoidMap.put(row+"-"+col, avoidSet);
+								value += localValue;	
+
 							}
-							value += localValue;	
 						}
 
 					}
