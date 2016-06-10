@@ -232,20 +232,8 @@ public class Main {
 
 		if(writeOutput) {
 			PrintWriter writer = new PrintWriter(fileOutputPath, "UTF-8");
-			for(int i=0;i<agg.getSize(0);i++) {
-				for(int j=0; j<agg.getSize(0);j++) {
-					if(agg.getAsDouble(i,j) != 0) {
-						try {
-							writer.println(i+" "+j+" "+agg.getAsDouble(i,j));
-						}
-						catch(Exception e) {
-
-						}
-					}
-				}
-			}
+			writer.println(agg);
 			writer.close();
-
 		}
 
 
