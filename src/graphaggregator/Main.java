@@ -43,7 +43,7 @@ import au.com.bytecode.opencsv.CSVReader;
 public class Main {
 
 	public static void main(String args[]) throws IOException {
-		
+
 		System.out.println("Which mode do you want to use ? (adj/arff)");
 		Scanner scanner = new Scanner(System.in);
 		String mode = scanner.next();
@@ -82,18 +82,18 @@ public class Main {
 			System.out.println("File name to write the output in:");
 			fileOutputPath = scanner.next();
 		}
-		
-		
-		
+
+
+
 		Graph g = new MultiGraph("Test");;
 		Graph aggregated = new SingleGraph("aggregated");
 		SpriteManager sman = new SpriteManager(aggregated);
 		Matrix dense = null;
 		Matrix agg = null;
-		
-		
+
+
 		if(mode.equals("adj")) {
-			
+
 			CSVReader reader = new CSVReader(new FileReader(path));
 			String [] nextLine;
 			String[] firstLine = reader.readNext();
@@ -109,7 +109,7 @@ public class Main {
 				}
 			}
 			int line = 1;
-			
+
 			while ((nextLine = reader.readNext()) != null) {
 				for(int i=0;i<nextLine.length;i++) {
 					dense.setAsInt(Integer.parseInt(nextLine[i]), line,i);
@@ -139,78 +139,78 @@ public class Main {
 			}
 			System.out.println(individuals);
 			System.out.println(attributes);
-			
+
 		}
-		
+
 		if(mode.equals("arff")) {
-	    	int numberOfElements = 0;
-			
-			   	HashMap<String,Integer> attributesNames = new HashMap<String,Integer>();
-			   	int n;
-			   	BufferedReader arffReader =
-			   			 new BufferedReader(new FileReader(path));
-			   			 ArffReader arff = new ArffReader(arffReader);
-			   			 Instances data = arff.getData();
-			   			 n = data.numInstances();
-			   			 data.setClassIndex(data.numAttributes() - 1);
-			   			 for(int i=0;i<data.numAttributes();i++) {
-			   				 Attribute att = data.attribute(i);
-			   				 for(int j=0;j<att.numValues();j++) {
-			   					 numberOfElements++;
-			   					 attributes.add(numberOfElements);
-			   					 attributesNames.put(att.name()+"_"+att.value(j), numberOfElements);
-			   					 n++;
-			   				 }
-			   			 }
-			   			 dense = DenseMatrix.Factory.zeros(n, n);
-			
-			   			 for(int i=0;i<data.numInstances();i++) {
-			   				 Instance ins = data.instance(i);
-			   				 numberOfElements++;
-			   				 individuals.add(numberOfElements);
-			   				 for(int j=0;j<ins.numValues();j++) {
-			   					 if(ins.stringValue(j) != "?") {
-			       					 int attNodeId = attributesNames.get(ins.attribute(j).name()+"_"+ins.stringValue(j));
-			       					 System.out.println("Instance "+numberOfElements+"liée"+attNodeId);
-			       		             dense.setAsInt(1, numberOfElements-1,attNodeId-1);
-			       		             dense.setAsInt(1, attNodeId-1, numberOfElements-1);
-			
-			   					 }
-			    					 
-			   				 }
-			   			 }
-			    			 
-			
-			       for(Integer i:individuals) {
-			       	g.addNode(i.toString());
-			       	aggregated.addNode(i.toString());
-			       	Sprite s = sman.addSprite(i.toString());
-			       	s.attachToNode(i.toString());
-			       	g.getNode(i.toString()).setAttribute("type", "I");;
-			       }
-			       for(Integer a:attributes) {
-			       	g.addNode(a.toString());
-			       	g.getNode(a.toString()).setAttribute("type", "A");;
-			       }
-			       
-			        
-					      for(int row = 0;row<dense.getRowCount();row++) {
-					   	   for(int column = 0;column<dense.getColumnCount();column++) {
-					   		   if(dense.getAsByte(row,column) == 1) {
-					   			   g.addEdge(Integer.toString(row)+"/"+Integer.toString(column), row, column);
-					   		   }
-					   	   }
-					      }
-			       
-			       
+			int numberOfElements = 0;
+
+			HashMap<String,Integer> attributesNames = new HashMap<String,Integer>();
+			int n;
+			BufferedReader arffReader =
+					new BufferedReader(new FileReader(path));
+			ArffReader arff = new ArffReader(arffReader);
+			Instances data = arff.getData();
+			n = data.numInstances();
+			data.setClassIndex(data.numAttributes() - 1);
+			for(int i=0;i<data.numAttributes();i++) {
+				Attribute att = data.attribute(i);
+				for(int j=0;j<att.numValues();j++) {
+					numberOfElements++;
+					attributes.add(numberOfElements);
+					attributesNames.put(att.name()+"_"+att.value(j), numberOfElements);
+					n++;
+				}
+			}
+			dense = DenseMatrix.Factory.zeros(n, n);
+
+			for(int i=0;i<data.numInstances();i++) {
+				Instance ins = data.instance(i);
+				numberOfElements++;
+				individuals.add(numberOfElements);
+				for(int j=0;j<ins.numValues();j++) {
+					if(ins.stringValue(j) != "?") {
+						int attNodeId = attributesNames.get(ins.attribute(j).name()+"_"+ins.stringValue(j));
+						System.out.println("Instance "+numberOfElements+"liée"+attNodeId);
+						dense.setAsInt(1, numberOfElements-1,attNodeId-1);
+						dense.setAsInt(1, attNodeId-1, numberOfElements-1);
+
+					}
+
+				}
 			}
 
-		
+
+			for(Integer i:individuals) {
+				g.addNode(i.toString());
+				aggregated.addNode(i.toString());
+				Sprite s = sman.addSprite(i.toString());
+				s.attachToNode(i.toString());
+				g.getNode(i.toString()).setAttribute("type", "I");;
+			}
+			for(Integer a:attributes) {
+				g.addNode(a.toString());
+				g.getNode(a.toString()).setAttribute("type", "A");;
+			}
 
 
-		
-		
-//		System.out.println(dense);
+			for(int row = 0;row<dense.getRowCount();row++) {
+				for(int column = 0;column<dense.getColumnCount();column++) {
+					if(dense.getAsByte(row,column) == 1) {
+						g.addEdge(Integer.toString(row)+"/"+Integer.toString(column), row, column);
+					}
+				}
+			}
+
+
+		}
+
+
+
+
+
+
+		//		System.out.println(dense);
 		agg = aggregateMatrix(dense, individuals, attributes, depth);
 		System.out.println(agg);
 		g.display();
@@ -229,25 +229,25 @@ public class Main {
 		}
 		Viewer aggView = aggregated.display();
 
-		
+
 		if(writeOutput) {
 			PrintWriter writer = new PrintWriter(fileOutputPath, "UTF-8");
-		       for(int i=0;i<agg.getSize(0);i++) {
-		    	   for(int j=0; j<agg.getSize(0);j++) {
-		    		   if(agg.getAsDouble(i,j) != 0) {
-		    			   try {
-		        		       writer.println(i+" "+j+" "+agg.getAsDouble(i,j));
-		    			   }
-		    			   catch(Exception e) {
-		    				   
-		    			   }
-		    		   }
-		    	   }
-		       }
-		       writer.close();
-		       
+			for(int i=0;i<agg.getSize(0);i++) {
+				for(int j=0; j<agg.getSize(0);j++) {
+					if(agg.getAsDouble(i,j) != 0) {
+						try {
+							writer.println(i+" "+j+" "+agg.getAsDouble(i,j));
+						}
+						catch(Exception e) {
+
+						}
+					}
+				}
+			}
+			writer.close();
+
 		}
-		       
+
 
 	}
 	public static Matrix aggregateMatrix(Matrix adj, List<Integer> individuals,List<Integer> attributes, int depth) {
@@ -258,7 +258,7 @@ public class Main {
 		for(int iter = 2; iter <= depth; iter++) {
 			oldMatrix = output;    		
 			kMult = customProduct(kMult,adj,attributes,avoidMap);
-//			System.out.println("Iteration "+iter+" Map "+avoidMap.toString());
+			//			System.out.println("Iteration "+iter+" Map "+avoidMap.toString());
 
 			for(int i = 0;i<individuals.size();i++) {
 
@@ -294,24 +294,17 @@ public class Main {
 				for(int k : attributeList) {
 					double localValue = A.getAsDouble(row,k-1)*B.getAsDouble(k-1,col);
 
-						if(true) {
-							if(localValue >=1) {
-								if(avoidMap.get(row+"-"+(k-1))==null || !avoidMap.get(row+"-"+(k-1)).contains((k-1)+"-"+col)) {
-
-								avoidSet.add((k-1)+"-"+row);
-								avoidSet.add(col+"-"+(k-1));
-								avoidMap.put(row+"-"+col, avoidSet);
-								value += localValue;	
-
-							}
+					if(localValue >=1) {
+						if(avoidMap.get(row+"-"+(k-1))==null || !avoidMap.get(row+"-"+(k-1)).contains((k-1)+"-"+col)) {
+							avoidSet.add((k-1)+"-"+row);
+							avoidSet.add(col+"-"+(k-1));
+							avoidMap.put(row+"-"+col, avoidSet);
+							value += localValue;	
 						}
-
 					}
 
 				}
 				output.setAsDouble(value, row, col);
-
-
 			}
 
 		}
