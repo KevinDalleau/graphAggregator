@@ -232,7 +232,14 @@ public class Main {
 
 		if(writeOutput) {
 			PrintWriter writer = new PrintWriter(fileOutputPath, "UTF-8");
-			writer.println(agg);
+			String[][] write = agg.toStringArray();
+			for(int i = 0;i<write.length;i++) {
+				String line = write[i][0];
+				for(int j = 1; j<write.length;j++) {
+					line+= ","+write[i][j];
+				}
+				writer.println(line);
+			}
 			writer.close();
 		}
 
@@ -271,13 +278,13 @@ public class Main {
 		for(int row = 0; row < A.getSize(0);row++) {
 			for(int col = 0;col < A.getSize(0);col++) {
 				int value = 0;
-				Set<String> avoidSet;
-				if(avoidMap.get(row+"-"+col) != null) {
-					avoidSet = avoidMap.get(row+"-"+col);
-				}
-				else {
-					avoidSet = new HashSet<String>();
-				}
+				Set<String> avoidSet = new HashSet<String>();
+//				if(avoidMap.get(row+"-"+col) != null) {
+//					avoidSet = avoidMap.get(row+"-"+col);
+//				}
+//				else {
+//					avoidSet = new HashSet<String>();
+//				}
 
 				for(int k : attributeList) {
 					double localValue = A.getAsDouble(row,k-1)*B.getAsDouble(k-1,col);
