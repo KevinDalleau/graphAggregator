@@ -14,12 +14,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import org.apache.jena.rdf.model.Model;
 import org.graphstream.graph.Graph;
 import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.MultiGraph;
@@ -44,7 +46,7 @@ public class Main {
 
 	public static void main(String args[]) throws IOException {
 
-		System.out.println("Which mode do you want to use ? (adj/arff)");
+		System.out.println("Which mode do you want to use ? (adj/arff/rdf)");
 		Scanner scanner = new Scanner(System.in);
 		String mode = scanner.next();
 		String path = "";
@@ -65,11 +67,17 @@ public class Main {
 			for(int individual : individualsInt) {
 				individuals.add(individual);
 			}
-			System.out.println("Select the desired depth : ");
+			System.out.println("Select the desired depth: ");
 			depth = Integer.parseInt(scanner.next());
 		}
 		if(mode.equals("arff")) {
 			System.out.println("Path to the arff file of the adjacency matrix: ");
+			path = scanner.next();
+			System.out.println("Select the desired depth : ");
+			depth = Integer.parseInt(scanner.next());
+		}
+		if(mode.equals("rdf")) {
+			System.out.println("Path to the rdf file: ");
 			path = scanner.next();
 			System.out.println("Select the desired depth : ");
 			depth = Integer.parseInt(scanner.next());
@@ -91,7 +99,23 @@ public class Main {
 		Matrix dense = null;
 		Matrix agg = null;
 
-
+		if(mode.equals("rdf")) {
+			Rdfmanager rdf = new Rdfmanager();
+			Model model = rdf.loadRdf(path);
+			LinkedHashMap<String,Integer> individualsList = rdf.loadIndividuals(model);
+			LinkedHashMap<String,Integer> attributesList = rdf.loadAttributes(model, individualsList.size());
+			for(String key : individualsList.keySet()) {
+				individuals.add(individualsList.get(key));
+			}
+			for(String key : attributesList.keySet()) {
+				attributes.add(attributesList.get(key));
+			}
+			System.out.println(individualsList);
+			System.out.println(attributesList);
+			dense = rdf.getAdjacencyMatrix(model, individualsList, attributesList);
+//			rdf.loadCSV("./text.csv",false);
+			
+		}
 		if(mode.equals("adj")) {
 
 			CSVReader reader = new CSVReader(new FileReader(path));
@@ -116,29 +140,7 @@ public class Main {
 				}
 				line++;
 			}
-
-			for(Integer i:individuals) {
-				g.addNode(i.toString());
-				aggregated.addNode(i.toString());
-				Sprite s = sman.addSprite(i.toString());
-				s.attachToNode(i.toString());
-				g.getNode(i.toString()).setAttribute("type", "I");;
-			}
-			for(Integer a:attributes) {
-				g.addNode(a.toString());
-				g.getNode(a.toString()).setAttribute("type", "A");;
-
-			}
-
-			for(int row = 0;row<dense.getRowCount();row++) {
-				for(int column = 0;column<dense.getColumnCount();column++) {
-					if(dense.getAsByte(row,column) == 1) {
-						g.addEdge(Integer.toString(row)+Integer.toString(column), row, column);
-					}
-				}
-			}
-			System.out.println(individuals);
-			System.out.println(attributes);
+		
 
 		}
 
@@ -181,33 +183,42 @@ public class Main {
 			}
 
 
-			for(Integer i:individuals) {
-				g.addNode(i.toString());
-				aggregated.addNode(i.toString());
-				Sprite s = sman.addSprite(i.toString());
-				s.attachToNode(i.toString());
-				g.getNode(i.toString()).setAttribute("type", "I");;
-			}
-			for(Integer a:attributes) {
-				g.addNode(a.toString());
-				g.getNode(a.toString()).setAttribute("type", "A");;
-			}
+		}
+		
+		for(Integer i:individuals) {
+			g.addNode(i.toString());
+			aggregated.addNode(i.toString());
+			Sprite s = sman.addSprite(i.toString());
+			s.attachToNode(i.toString());
+			g.getNode(i.toString()).setAttribute("type", "I");;
+		}
+		for(Integer a:attributes) {
+			g.addNode(a.toString());
+			g.getNode(a.toString()).setAttribute("type", "A");;
+		}
 
 
-			for(int row = 0;row<dense.getRowCount();row++) {
-				for(int column = 0;column<dense.getColumnCount();column++) {
-					if(dense.getAsByte(row,column) == 1) {
-						g.addEdge(Integer.toString(row)+"/"+Integer.toString(column), row, column);
-					}
+		for(int row = 0;row<dense.getRowCount();row++) {
+			for(int column = 0;column<dense.getColumnCount();column++) {
+				if(dense.getAsByte(row,column) == 1) {
+					g.addEdge(Integer.toString(row)+"/"+Integer.toString(column), row, column);
 				}
 			}
-
-
 		}
 
 
 
 
+		PrintWriter writerAdj = new PrintWriter("./vote_adj.csv", "UTF-8");
+		String[][] writeAdj = dense.toStringArray();
+		for(int i = 0;i<writeAdj.length;i++) {
+			String line = writeAdj[i][0];
+			for(int j = 1; j<writeAdj.length;j++) {
+				line+= ","+writeAdj[i][j];
+			}
+			writerAdj.println(line);
+		}
+		writerAdj.close();
 
 
 		//		System.out.println(dense);
