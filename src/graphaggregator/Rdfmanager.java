@@ -4,7 +4,6 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 
@@ -40,16 +39,15 @@ public class Rdfmanager {
 	
 	public LinkedHashMap<String,Integer> loadIndividuals(Model model) {
 		LinkedHashMap<String,Integer> individuals = new LinkedHashMap<String,Integer>();
-		String queryString = "SELECT ?individuals WHERE {?individuals <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>  \"individual\"}";
+		String queryString = "SELECT ?individuals ?individualId WHERE {?individuals <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>  \"individual\" . ?individuals <http://graph.com/identifier> ?individualId.}";
 		Query query = QueryFactory.create(queryString);
 		QueryExecution qExec = QueryExecutionFactory.create(query,model);
 		ResultSet results = qExec.execSelect();
-		int n = 1;
 		while(results.hasNext()) {
 			QuerySolution sol = results.nextSolution();
 			RDFNode individual = sol.get("individuals");
-			individuals.put(individual.toString().replace("http://graph.com/individual/", ""),n);
-			n++;
+			RDFNode individualId = sol.get("individualId");
+			individuals.put(individual.toString().replace("http://graph.com/individual/", ""),Integer.parseInt(individualId.toString()));
 		}
 		return individuals;
 	}
@@ -71,19 +69,12 @@ public class Rdfmanager {
 	}
 	
 	public Matrix getAdjacencyMatrix(Model model, LinkedHashMap<String,Integer> individuals, LinkedHashMap<String,Integer> attributes) {
-		HashMap<String,Integer> attributesMap = new HashMap<String,Integer>();
-		int numberOfAttributes = 0;
-		int numberOfIndividuals = 0;
-		String prefix = "http://graph.com/";		
-		String queryString = "SELECT DISTINCT ?individual ?attribute WHERE {?individual "+linked+" ?attribute. ?attribute <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> \"attribute\"}";
+		String queryString = "SELECT DISTINCT ?individual ?attribute WHERE {?individual <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> \"individual\". ?individual "+linked+" ?attribute. ?attribute <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> \"attribute\"}";
 		Query query = QueryFactory.create(queryString);
 		QueryExecution qExec = QueryExecutionFactory.create(query,model);
 		ResultSet results = qExec.execSelect();
 		int n = individuals.size()+attributes.size();
 		Matrix dense = DenseMatrix.Factory.zeros(n,n);
-		System.out.println(n);
-		System.out.println(dense);
-
 		while(results.hasNext()) {
 			QuerySolution sol = results.nextSolution();
 			String attribute = sol.get("attribute").toString().replace("http://graph.com/", "");
@@ -103,17 +94,18 @@ public class Rdfmanager {
 		Model model = ModelFactory.createDefaultModel();
 		String[] nextLine;
 		String[] header = reader.readNext();
-		LinkedList<Property> properties;
 		String prefix = "http://graph.com/";
 		Property rdfType = model.createProperty("http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
 		Property relation = model.createProperty(prefix+"relation/"+"linked");
 		Property type = model.createProperty(prefix+"globalattribute");
+		Property idProperty = model.createProperty(prefix+"identifier");
 
 		int line = 1;
 		while((nextLine = reader.readNext())!=null) {
 			String id1 = Integer.toString(line);
 			Resource r1 = model.createResource(prefix+"individual/"+id1);
 			r1.addProperty(rdfType, "individual");
+			r1.addProperty(idProperty, id1);
 			for(int i=0;i<nextLine.length;i++) {
 				String attribute = nextLine[i];
 				Property p1 = model.createProperty(prefix+header[i]+"_"+attribute);

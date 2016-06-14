@@ -113,7 +113,7 @@ public class Main {
 			System.out.println(individualsList);
 			System.out.println(attributesList);
 			dense = rdf.getAdjacencyMatrix(model, individualsList, attributesList);
-//			rdf.loadCSV("./text.csv",false);
+//			rdf.loadCSV("./vote_transformed.csv",false);
 			
 		}
 		if(mode.equals("adj")) {
@@ -154,16 +154,24 @@ public class Main {
 			ArffReader arff = new ArffReader(arffReader);
 			Instances data = arff.getData();
 			n = data.numInstances();
-			data.setClassIndex(data.numAttributes() - 1);
+//			data.setClassIndex(data.numAttributes() - 1);
 			for(int i=0;i<data.numAttributes();i++) {
 				Attribute att = data.attribute(i);
+				numberOfElements++;
+				attributes.add(numberOfElements);
+				attributesNames.put(att.name()+"_?", numberOfElements);
+				n++;
+			
+			
 				for(int j=0;j<att.numValues();j++) {
 					numberOfElements++;
 					attributes.add(numberOfElements);
 					attributesNames.put(att.name()+"_"+att.value(j), numberOfElements);
 					n++;
 				}
+					
 			}
+			System.out.println(attributesNames);
 			dense = DenseMatrix.Factory.zeros(n, n);
 
 			for(int i=0;i<data.numInstances();i++) {
@@ -171,13 +179,15 @@ public class Main {
 				numberOfElements++;
 				individuals.add(numberOfElements);
 				for(int j=0;j<ins.numValues();j++) {
-					if(ins.stringValue(j) != "?") {
+//					if(ins.stringValue(j) != "?") {
 						int attNodeId = attributesNames.get(ins.attribute(j).name()+"_"+ins.stringValue(j));
-						System.out.println("Instance "+numberOfElements+"liée"+attNodeId);
+						if(numberOfElements==1) {
+							System.out.println("Instance "+numberOfElements+"liée"+attNodeId);
+						}
 						dense.setAsInt(1, numberOfElements-1,attNodeId-1);
 						dense.setAsInt(1, attNodeId-1, numberOfElements-1);
 
-					}
+//					}
 
 				}
 			}
@@ -208,7 +218,7 @@ public class Main {
 
 
 
-
+		
 		PrintWriter writerAdj = new PrintWriter("./vote_adj.csv", "UTF-8");
 		String[][] writeAdj = dense.toStringArray();
 		for(int i = 0;i<writeAdj.length;i++) {
@@ -219,11 +229,13 @@ public class Main {
 			writerAdj.println(line);
 		}
 		writerAdj.close();
-
+		
+		individuals.sort(null);
+		attributes.sort(null);
 
 		//		System.out.println(dense);
 		agg = aggregateMatrix(dense, individuals, attributes, depth);
-		System.out.println(agg);
+
 		g.display();
 
 		for(int i=0;i<agg.getSize(0);i++) {
