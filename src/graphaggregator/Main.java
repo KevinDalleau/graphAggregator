@@ -110,7 +110,6 @@ public class Main {
 			for(String key : attributesList.keySet()) {
 				attributes.add(attributesList.get(key));
 			}
-			System.out.println(individualsList);
 			System.out.println(attributesList);
 			dense = rdf.getAdjacencyMatrix(model, individualsList, attributesList);
 //			rdf.loadCSV("./vote_transformed.csv",false);

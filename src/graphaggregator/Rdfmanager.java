@@ -39,7 +39,7 @@ public class Rdfmanager {
 	
 	public LinkedHashMap<String,Integer> loadIndividuals(Model model) {
 		LinkedHashMap<String,Integer> individuals = new LinkedHashMap<String,Integer>();
-		String queryString = "SELECT ?individuals ?individualId WHERE {?individuals <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>  \"individual\" . ?individuals <http://graph.com/identifier> ?individualId.}";
+		String queryString = "SELECT ?individuals ?individualId WHERE {?individuals <http://www.graph.com/nodeType/>  \"individual\" . ?individuals <http://graph.com/identifier> ?individualId.}";
 		Query query = QueryFactory.create(queryString);
 		QueryExecution qExec = QueryExecutionFactory.create(query,model);
 		ResultSet results = qExec.execSelect();
@@ -54,7 +54,7 @@ public class Rdfmanager {
 	
 	public LinkedHashMap<String,Integer> loadAttributes(Model model, int offset) {
 		LinkedHashMap<String,Integer> attributes = new LinkedHashMap<String,Integer>();
-		String queryString = "SELECT ?attributes WHERE {?attributes <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>  \"attribute\"}";
+		String queryString = "SELECT ?attributes WHERE {?attributes <http://www.graph.com/nodeType/>  \"attribute\"}";
 		Query query = QueryFactory.create(queryString);
 		QueryExecution qExec = QueryExecutionFactory.create(query,model);
 		ResultSet results = qExec.execSelect();
@@ -69,7 +69,7 @@ public class Rdfmanager {
 	}
 	
 	public Matrix getAdjacencyMatrix(Model model, LinkedHashMap<String,Integer> individuals, LinkedHashMap<String,Integer> attributes) {
-		String queryString = "SELECT DISTINCT ?individual ?attribute WHERE {?individual <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> \"individual\". ?individual "+linked+" ?attribute. ?attribute <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> \"attribute\"}";
+		String queryString = "SELECT DISTINCT ?individual ?attribute WHERE {?individual <http://www.graph.com/nodeType/> \"individual\". ?individual "+linked+" ?attribute. ?attribute <http://www.graph.com/nodeType/> \"attribute\"}";
 		Query query = QueryFactory.create(queryString);
 		QueryExecution qExec = QueryExecutionFactory.create(query,model);
 		ResultSet results = qExec.execSelect();
@@ -84,6 +84,27 @@ public class Rdfmanager {
 			dense.setAsDouble(1.0, individualIndex-1, attributeIndex-1);
 			dense.setAsDouble(1.0, attributeIndex-1,individualIndex-1);
 		}
+		
+		String queryStringAtt = "SELECT DISTINCT ?attribute1 ?commonAttribute\n" + 
+				"WHERE {\n" + 
+				"?attribute1 <http://www.graph.com/nodeType/> \"attribute\".\n" + 
+				"?commonAttribute <http://www.graph.com/nodeType/> \"attribute\".\n" + 
+				"?attribute1 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?commonAttribute.\n" + 
+				"}	";
+		Query queryAtt = QueryFactory.create(queryStringAtt);
+		QueryExecution qExecAtt = QueryExecutionFactory.create(queryAtt,model);
+		ResultSet resultsAtt = qExecAtt.execSelect();
+		while(resultsAtt.hasNext()) {
+			QuerySolution sol = resultsAtt.nextSolution();
+			String attribute1 = sol.get("attribute1").toString().replace("http://graph.com/", "");
+			int attributeIndex = attributes.get(attribute1);
+			String commonAttribute = sol.get("commonAttribute").toString().replace("http://graph.com/", "");
+			int commonAttributeIndex = attributes.get(commonAttribute);
+			dense.setAsDouble(1.0, commonAttributeIndex-1, attributeIndex-1);
+			dense.setAsDouble(1.0, attributeIndex-1,commonAttributeIndex-1);
+		}
+		
+		
 			    
 		return dense;
 		
@@ -95,7 +116,7 @@ public class Rdfmanager {
 		String[] nextLine;
 		String[] header = reader.readNext();
 		String prefix = "http://graph.com/";
-		Property rdfType = model.createProperty("http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
+		Property rdfNodeType = model.createProperty("http://www.graph.com/nodeType/");
 		Property relation = model.createProperty(prefix+"relation/"+"linked");
 		Property type = model.createProperty(prefix+"globalattribute");
 		Property idProperty = model.createProperty(prefix+"identifier");
@@ -104,14 +125,14 @@ public class Rdfmanager {
 		while((nextLine = reader.readNext())!=null) {
 			String id1 = Integer.toString(line);
 			Resource r1 = model.createResource(prefix+"individual/"+id1);
-			r1.addProperty(rdfType, "individual");
+			r1.addProperty(rdfNodeType, "individual");
 			r1.addProperty(idProperty, id1);
 			for(int i=0;i<nextLine.length;i++) {
 				String attribute = nextLine[i];
 				Property p1 = model.createProperty(prefix+header[i]+"_"+attribute);
 				Property superP1 = model.createProperty(prefix+header[i]);
 				p1.addProperty(type, superP1);
-				p1.addProperty(rdfType,"attribute");
+				p1.addProperty(rdfNodeType,"attribute");
 				r1.addProperty(relation,p1);
 			}		
 			line++;
@@ -126,13 +147,13 @@ public class Rdfmanager {
 		    Property  predicate = stmt.getPredicate();   // get the predicate
 		    RDFNode   object    = stmt.getObject();      // get the object
 
-		    writer.print("<"+subject.toString()+">");
-		    writer.print(" <" + predicate.toString() + "> ");
+		    writer.print("<"+subject.toString().trim().replace(" ", "").replace(">", "").replace("<","")+">");
+		    writer.print(" <" + predicate.toString().trim().replace(" ", "").replace(">", "").replace("<","") + "> ");
 		    if (object instanceof Resource) {
-		       writer.print("<"+object.toString()+">");
+		       writer.print("<"+object.toString().trim().replace(" ", "").replace(">", "").replace("<","")+">");
 		    } else {
 		        // object is a literal
-		        writer.print(" \"" + object.toString() + "\"");
+		        writer.print(" \"" + object.toString().trim().replace(" ", "").replace(">", "").replace("<","") + "\"");
 		    }
 
 		    writer.println(" .");
