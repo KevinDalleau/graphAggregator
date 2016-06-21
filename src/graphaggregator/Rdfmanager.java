@@ -68,21 +68,21 @@ public class Rdfmanager {
 		return attributes;
 	}
 	
-	public Matrix getAdjacencyMatrix(Model model, LinkedHashMap<String,Integer> individuals, LinkedHashMap<String,Integer> attributes) {
+	public float[][] getAdjacencyMatrix(Model model, LinkedHashMap<String,Integer> individuals, LinkedHashMap<String,Integer> attributes) {
 		String queryString = "SELECT DISTINCT ?individual ?attribute WHERE {?individual <http://www.graph.com/nodeType/> \"individual\". ?individual "+linked+" ?attribute. ?attribute <http://www.graph.com/nodeType/> \"attribute\"}";
 		Query query = QueryFactory.create(queryString);
 		QueryExecution qExec = QueryExecutionFactory.create(query,model);
 		ResultSet results = qExec.execSelect();
 		int n = individuals.size()+attributes.size();
-		Matrix dense = DenseMatrix.Factory.zeros(n,n);
+		float[][] dense = new float[n][n];
 		while(results.hasNext()) {
 			QuerySolution sol = results.nextSolution();
 			String attribute = sol.get("attribute").toString().replace("http://graph.com/", "");
 			int attributeIndex = attributes.get(attribute);
 			String individual = sol.get("individual").toString().replace("http://graph.com/individual/", "");
 			int individualIndex = individuals.get(individual);
-			dense.setAsDouble(1.0, individualIndex-1, attributeIndex-1);
-			dense.setAsDouble(1.0, attributeIndex-1,individualIndex-1);
+			dense[individualIndex-1][attributeIndex-1]=1;
+			dense[attributeIndex-1][individualIndex-1]=1;
 		}
 		
 		String queryStringAtt = "SELECT DISTINCT ?attribute1 ?commonAttribute\n" + 
@@ -100,8 +100,8 @@ public class Rdfmanager {
 			int attributeIndex = attributes.get(attribute1);
 			String commonAttribute = sol.get("commonAttribute").toString().replace("http://graph.com/", "");
 			int commonAttributeIndex = attributes.get(commonAttribute);
-			dense.setAsDouble(1.0, commonAttributeIndex-1, attributeIndex-1);
-			dense.setAsDouble(1.0, attributeIndex-1,commonAttributeIndex-1);
+			dense[commonAttributeIndex-1][attributeIndex-1] = 1;
+			dense[attributeIndex-1][commonAttributeIndex-1] = 1;
 		}
 		
 		
@@ -124,10 +124,10 @@ public class Rdfmanager {
 		int line = 1;
 		while((nextLine = reader.readNext())!=null) {
 			String id1 = Integer.toString(line);
-			Resource r1 = model.createResource(prefix+"individual/"+id1);
+			Resource r1 = model.createResource(prefix+"individual/"+nextLine[0]);
 			r1.addProperty(rdfNodeType, "individual");
 			r1.addProperty(idProperty, id1);
-			for(int i=0;i<nextLine.length;i++) {
+			for(int i=1;i<nextLine.length;i++) {
 				String attribute = nextLine[i];
 				Property p1 = model.createProperty(prefix+header[i]+"_"+attribute);
 				Property superP1 = model.createProperty(prefix+header[i]);
